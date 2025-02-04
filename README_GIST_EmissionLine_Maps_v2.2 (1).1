@@ -1,0 +1,116 @@
+********************************************************************************
+Title: README_GIST_EmissionLine_Maps_v2.2.1
+Author: Andrew Battisti (andrew.battisti@anu.edu.au)
+Date of creation: 07/12/2022
+Last modified: 8/06/2023
+Purpose: This file provides 2D emission line maps at a spaxel level and stellar properties for S/N=10 voronoi bins.
+Dependencies: This product is based on the v2.2.1 reduced cubes and associated manually edited dilated and undilated segmentation maps.
+Other info: These emission line outputs come from GIST v3.0 (Bittner et al. 2019, A&A 628, A117), which is a wrapper for pPXF (Cappellari & Emsellem 2004; Cappellari 2017) and GandALF (Sarzi et al. 2006; Falcón-Barroso et al. 2006). However, there are several UNIQUE customisations made for its use with MAGPI data (see below). The default GIST outputs make numerous different 1D FITS tables that are not well-suited for easy analysis. Therefore, I have converted these outputs into single 2D FITS files for each galaxy that have many extensions (currently 50+ extensions), detailed below. If you are interested in the specific GIST configuration files used or other GIST outputs not included in the FITS files, please contact me (contact info at top).
+********************************************************************************
+
+Relevant concepts:
+The following changes have been made with respect to GIST v3.0:
+-A custom binning scheme is used where if the continuum S/N is too low for the adopted threshold for Voronoi bins, then a single integrated bin is adopted instead
+-A custom version of pyGandALF is implemented that has the following additional features:
+   	  (1) A better (more robust) way to deal with lower S/N emission lines than the standard version. This is based on making slight variations to initial parameter guess for line parameters. These changes can sometimes produces fits for spaxels that would otherwise return NaN values (MPFIT fails to converge). 
+	  (2) Estimates the errors on fluxes, velocities, and sigma for the emission lines (not yet implemented in default GIST), based on a Monte Carlo approach.
+The most important aspects of the GIST configuration are below separated according to STELLAR CONTINUUM, EMISSION LINES, or OTHER.
+===STELLAR CONTINUUM===
+-Stellar templates are from SSP_MIST_C3K_Salpeter and the multiplicative Legendre polynomial is set to 12
+-Stellar templates are light-weighted for normalisation (as opposed to mass-weighted)
+-Stellar continuum is Voronoi binned to S/N=10 (IMPORTANT NOTE: this is lower S/N binning than adopted by the absorption line working group) 
+-Spaxels used in the stellar continuum Voronoi binning are restricted to require:
+	 (1) Reside inside the DILATED ProFound mask
+	 (2) Have integrated S/N>=2 between 6050A < wave_obs < 7750A; corresponding roughly to the peak MUSE sensitivity range
+	 [NOTE: a change on condition (2) will likely be implemented for emission line-only sources]
+===EMISSION LINES===
+-NO DUST ATTENUATION CORRECTIONS ARE MADE ON THE EMISSION LINE FLUXES (i.e., reddening corrections) 
+-Line positions are based on VACUUM wavelengths
+-Emission line fits are SINGLE COMPONENT and the kinematics of all lines are TIED together. GIST requires a 'reference' line for its configuration but, with our current settings for MAGPI, it is using all of the lines simultaneously to constrain the kinematics. Therefore, the influence that each line has on the kinematic constraints will be a function of its S/N (i.e., brighter lines -> more influence) and it DOES NOT require that the 'reference' line is detected. The 'reference' line adopted is dependent on the the galaxy redshift (i.e., wavelength range covered), and is set to:
+      	  (1) Ha for 0<z<0.424
+	  (2) [OIII5008] for 0.424<z<0.865
+	  (3) [OII3730] for 0.865<z<1.507
+-The line velocity for each spaxel is resticted to being +/-600 km/s relative to the stellar continuum velocity of the nearest voronoi bin
+-The line sigma for each spaxel is resticted to be in the range from 1-300 km/s
+===OTHER===
+-Utilizes the unique line spread function (LSF) for each field
+-The D4000 values in the FITS files are determined after-the-fact based on the GIST stellar continuum fits. D4000 = Flux_total(4050 - 4250A)/Flux_total(3750 - 3950A)]. Spaxels where the blue or red sides of the MUSE data are negative or where the resulting D4000 from the continuum fit is negative are set to NaN values in the FITS files.
+
+Data product description:
+For full information on the files and the structure of the extensions, please refer directly to the FITS Primary Header (extension=0) for each file.
+===UNITS===
+-Line flux and error units are [10**(-20)*erg/s/cm**2] (i.e., similar to scale used for spectral cubes)
+-Velocity units are [km/s] and are with respect to the input redshift value (i.e., no offsets are applied to center on zero)
+-Sigma units are [km/s]
+
+Usage notes:
+N/A
+
+Location of files:
+A tarball folder of the GIST_EmissionLine_Maps for a given MAGPI field can be found in:
+...cloud.../MAGPI/valueadded/analysed_v2.2.1/MAGPIXXXX/MAGPIXXXX_GIST_EmissionLine_Maps.tar.gz
+
+Relevant formatting information:
+N/A
+
+Extension list:
+EXT00   = 'Primary Header'     /                                                
+EXT01   = 'COLLAPSED_SPECTRUM' /white light image (sum)                         
+EXT02   = 'DILATED_MASK'       /Segmentation mask from ProFound                 
+EXT03   = 'V_STELLAR'          /(km/s) S/N=10 voronoi bins                      
+EXT04   = 'SIGMA_STELLAR'      /(km/s) S/N=10 voronoi bins                      
+EXT05   = 'MEAN_AGE_STELLAR'   /(Gyr) S/N=10 voronoi bins                       
+EXT06   = 'MEAN_Z_STELLAR'     /([M/H]) S/N=10 voronoi bins                     
+EXT07   = 'D4000   '           /Based on observed spectrum                      
+EXT08   = 'D4000ERR'           /Based on observed spectrum                      
+EXT09   = 'V_GAS   '           /(km/s) Line depends on redshift, see VTIELINE   
+EXT10   = 'VERR_GAS'           /(km/s) Line depends on redshift, see VTIELINE   
+EXT11   = 'SIGMA_GAS'          /(km/s)                                          
+EXT12   = 'SIGMAERR_GAS'       /(km/s)                                          
+EXT13   = 'OII_3727_F'         /0.262<z<1.509; Laser gap: 0.556<z<0.602         
+EXT14   = 'OII_3727_FERR'      /                                                
+EXT15   = 'OII_3730_F'         /0.261<z<1.507; Laser gap: 0.555<z<0.601         
+EXT16   = 'OII_3730_FERR'      /                                                
+EXT17   = 'NeIII_3870_F'       /0.215<z<1.416; Laser gap: 0.498<z<0.543         
+EXT18   = 'NeIII_3870_FERR'    /                                                
+EXT19   = 'NeIII_3969_F'       /0.185<z<1.356; Laser gap: 0.461<z<0.505         
+EXT20   = 'NeIII_3969_FERR'    /                                                
+EXT21   = 'H5_F    '           /0.209<z<1.403; Laser gap: 0.490<z<0.535         
+EXT22   = 'H5_FERR '           /                                                
+EXT23   = 'He_F    '           /0.184<z<1.354; Laser gap: 0.460<z<0.504         
+EXT24   = 'He_FERR '           /                                                
+EXT25   = 'Hd_F    '           /0.146<z<1.279; Laser gap: 0.413<z<0.456         
+EXT26   = 'Hd_FERR '           /                                                
+EXT27   = 'Hg_F    '           /0.083<z<1.153; Laser gap: 0.335<z<0.376         
+EXT28   = 'Hg_FERR '           /                                                
+EXT29   = 'OIII_4364_F'        /0.077<z<1.142; Laser gap: 0.328<z<0.368         
+EXT30   = 'OIII_4364_FERR'     /                                                
+EXT31   = 'HeII_4687_F'        /0.003<z<0.995; Laser gap: 0.237<z<0.274         
+EXT32   = 'HeII_4687_FERR'     /                                                
+EXT33   = 'ArIV_4713_F'        /0.000<z<0.984; Laser gap: 0.230<z<0.267         
+EXT34   = 'ArIV_4713_FERR'     /                                                
+EXT35   = 'ArIV_4741_F'        /0.000<z<0.972; Laser gap: 0.223<z<0.260         
+EXT36   = 'ArIV_4741_FERR'     /                                                
+EXT37   = 'Hb_F    '           /0.000<z<0.923; Laser gap: 0.192<z<0.228         
+EXT38   = 'Hb_FERR '           /                                                
+EXT39   = 'OIII_5008_F'        /0.000<z<0.867; Laser gap: 0.158<z<0.193         
+EXT40   = 'OIII_5008_FERR'     /                                                
+EXT41   = 'NI_5199_F'          /0.000<z<0.798; Laser gap: 0.115<z<0.149         
+EXT42   = 'NI_5199_FERR'       /                                                
+EXT43   = 'NI_5202_F'          /0.000<z<0.797; Laser gap: 0.114<z<0.148         
+EXT44   = 'NI_5202_FERR'       /                                                
+EXT45   = 'HeI_5877_F'         /0.000<z<0.591; Laser gap: 0.000<z<0.016         
+EXT46   = 'HeI_5877_FERR'      /                                                
+EXT47   = 'OI_6302_F'          /0.000<z<0.483; No laser gap                     
+EXT48   = 'OI_6302_FERR'       /                                                
+EXT49   = 'Ha_F    '           /0.000<z<0.424; No laser gap                     
+EXT50   = 'Ha_FERR '           /                                                
+EXT51   = 'NII_6585_F'         /0.000<z<0.420; No laser gap                     
+EXT52   = 'NII_6585_FERR'      /                                                
+EXT53   = 'SII_6718_F'         /0.000<z<0.391; No laser gap                     
+EXT54   = 'SII_6718_FERR'      /                                                
+EXT55   = 'SII_6733_F'         /0.000<z<0.388; No laser gap                     
+EXT56   = 'SII_6733_FERR'      /                                                
+EXT57   = 'G_LAM   '           /(Angstrom) GandALF Rest-frame wavelengths       
+EXT58   = 'G_LAMFLG'           /(0=included, 1=masked out) wavelength flag      
+

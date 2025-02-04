@@ -1,0 +1,148 @@
+********************************************************************************
+Title: README_profoundsegmap
+Author: Caroline foster (c.foster@unsw.edu.au)
+Date of creation: 01/11/2022
+Last modified: 01/11/2022
+Purpose: This file describes basic details of how the segmentation maps are run 
+and saved. Pls contact the author for additional detail or if you notice anything awry.
+Dependencies: Based on v2.2.1 reduced cubes.
+Other info: 
+********************************************************************************
+
+***Relevant concepts:***
+
+MAGPI Field IDs:
+MAGPI fields have unique 4 digits IDs starting with 12 (GAMA G12), 15 (GAMA G15) or 23 (GAMA G23). In each GAMA field (G12, G15 and G23), MAGPI fields are ordered by declination. The next 2 digits correspond to that declination order.
+
+***Data product description:*** 
+
+The ProFound R package https://arxiv.org/abs/1802.00937 (Robotham et al. 2018) is used to detect objects in the white light-image (MAGPIXXXX_CollapsedImage.fits) above a threshold of 3 x RMS_sky and produce a preliminary maximally segmented segmentation map (MAGPIXXXX_segmap_maxseg.fits and MAGPIXXXX_segmap_maxseg_undilated.fits. The relevant ProFound command (with relevant parameters) is:
+
+profoundProFound(whitelightimage, skycut=3., smooth=FALSE, cliptol=Inf, tolerance=0, reltol=0, pixcut=11, SBdilate=3, pixscale=0.2)
+
+This maximally segmented segmentation map is then manually adjusted to join mistakenly split segments or remove visibly spurious detections. This manually adjusted segmentation map is named MAGPIXXXX_manual_segmap.fits. Manually adjusted segments are dilated to 3 magnitudes beyond the sky RMS by setting the ProFound keyword SBdilate=3 to produce the dilated segmentation map: MAGPIXXXX_manual_segmap.fits. 
+
+ProFound is used once more to finalise photometric properties using the r and i-band images, these include r_e (R50, approximate elliptical semi-major axis containing half the flux), photometric position angle (ang), axis ratio (axrat) and apparent magnitudes, for every object detected in the field. For this purpose, image units are first converted to Janskys. The relevant ProFound call is:
+
+profoundMultiBand(inputlist=list(r-bandimageinjansky, i-bandimageinjansky), multibands=c('r','i'), segim=finalsegmentationmap, pixscale=0.2, magzero=8.9, fluxtype='Jansky', skytype='mean', grid=c(25,25))
+
+***Usage notes:***
+
+We recommend users carefully consider whether using R50, axrat and ang to determine the R50 ellipses is appropriate for the given target and science case. "Equivalent" products (e.g. using GalFit and MGE are also available).
+
+***Location of files:***
+
+Profound output cagalogue files may be found on the cloud under: ...cloud.../MAGPI/analysed_v2.2.1/MAGPIXXXX/MAGPIXXXX_profoundsources.csv
+
+Histograms showing a compilation of magnitudes and redshift is produced after each new field under the ...cloud.../MAGPI/analysed_v2.2.1/histograms.pdf.
+
+Segmentation maps are stored under ...cloud.../analysed_v2.2.1/MAGPIXXXX/segmaps
+
+
+***Relevant formatting information:***
+
+Segmentation maps are simple images of the same spatial dimension as the reduced cube. Pixel values correspond to the segment number assigned by ProFound. The format of the fits files is as follows:
+
+Segmentation maps:
+Extension  Type  Size
+DATA       IMAGE NAXIS1 x NAXIS2
+
+
+Profound catalogues:
+
+Profound catalogue output values descriptions can be found here:
+https://rdrr.io/github/asgr/ProFound/man/profoundProFound.html
+
+The information is copied from the above link for the following included columns:
+
+segID	
+Segmentation ID, which can be matched against values in segim
+
+xcen	
+Flux weighted x centre
+
+ycen	
+Flux weighted y centre
+
+xmax	
+x position of maximum flux
+
+ymax	
+y position of maximum flux
+
+RAcen	
+Flux weighted degrees Right Ascension centre (only present if a header is provided)
+
+Deccen	
+Flux weighted degrees Declination centre (only present if a header is provided)
+
+RAmax	
+Right Ascension of maximum flux (only present if a header is provided)
+
+Decmax	
+Declination of maximum flux (only present if a header is provided)
+
+flux	
+Total flux (calculated using image-sky) in ADUs or Jansky
+
+mag	
+Total flux converted to mag using magzero
+
+R50	
+Approximate elliptical semi-major axis containing 50% of the flux (units of pixscale, so
+if pixscale represents the standard asec/pix this will be asec)
+
+R90	
+Approximate elliptical semi-major axis containing 90% of the flux (units of pixscale, so if
+pixscale represents the standard asec/pix this will be asec)
+
+R100	
+Approximate elliptical semi-major axis containing 100% of the flux (units of pixscale, so if
+pixscale represents the standard asec/pix this will be asec)
+
+con	
+Concentration, R50/R90
+
+semimaj	
+Weighted standard deviation along the major axis, i.e. the semi-major first moment, so ~2 times
+this would be a typical major axis Kron radius (always in units of pix)
+
+semimin	
+Weighted standard deviation along the minor axis, i.e. the semi-minor first moment, so ~2 times
+this would be a typical minor axis Kron radius (always in units of pix)
+
+axrat	
+Axial ratio as given by min/maj
+
+ang	
+Orientation of the semi-major axis in degrees. This has the convention that 0= | (vertical), 45= \,
+90= - (horizontal), 135= /, 180= | (vertical)
+
+signif	
+Approximate singificance of the detection using the Chi-Square distribution
+
+FPlim	
+Approximate false-positive significance limit below which one such source might appear spuriously
+on an image this large
+
+flux_err	
+Estimated total error in the flux for the segment
+
+mag_err	
+Estimated total error in the magnitude for the segment
+
+Nmax
+Number of edge segment pixels that are touching a masked pixel (note NAs in image are also treated as masked pixels). -- Objects near the edge of the MAGPI field or with contamination by bad pixels will have non-zero Nmax values.
+
+flag_keep	
+A suggested flag for selecting good objects. Objects flagged FALSE have hit the iteration limit and
+have grown their flux by more than the median for all objects at the iteration limit. This tends to
+suggest a problem with the sky in the location of the segment.
+
+***NOTE: Suffixes "it" and "rt" relate to output from the r and i bands, respectively. Values
+without suffixes relate to the white light image values. There is no mag or mag_err for
+the white light image output.***
+
+Object naming and extraction:
+
+Unique 10-digit MAGPI IDs are assigned as a concatenation of the 4 digits FieldID and the 3+3 digits (Xmax,Ymax) position of the brightest pixel in the white-light image. First 2 digits of the FieldID encode the GAMA field number (12=G12, 15=G15, 23=G23), and 3rd and 4th digits encode MAGPI field ID. These IDs may change slightly between releases as the brightest pixel may vary depending on the reduction.

@@ -1,0 +1,191 @@
+********************************************************************************
+Title: README_MAGPI_visclass_bayesian_v2.2.1
+Author: Caroline foster (c.foster@unsw.edu.au)
+Date of creation: 29/11/2024
+Last modified: 29/11/2024
+Purpose: This file describes the details of the posterior probabilities from visual
+Classifications (see Foster et al. submitted in Nov. 2024). Pls contact the author for additional 
+detail or if you notice anything awry.
+Dependencies: Individual classifications collected via the MAGPI classification 
+shiny app deployed
+https://unsw.shinyapps.io/KinematicsClassApp/
+Synthetic images from MPDAF, gas kinematic (MAGPIXXXX_v2.2.1_GIST_Full_Maps.tar.gz) 
+and stellar kinematic (kinematic_maps_spaxels_2MOM_v2.2.1.tar.xz) maps are based 
+on v2.2.1 reduction of the MAGPI MUSE cubes.
+Other info: Contributing MAGPItes to this dataset are Caroline Foster, Alina Boecker, 
+Anshu Gupta, Caro Derkenne, Eda Gjergo, Eric Muller, Anna Ferre-Mateu, Giulia Santucci, 
+Hey-Jin Park, Qianhui Chen, Ryan Bagge, Sabine Bellstedt, Sabine Thater, Sam Vaughan 
+and Stefania Barsanti.
+********************************************************************************
+
+***Relevant concepts:***
+
+The code for the online app that was used to collect the visual classifications 
+can be found on github: https://github.com/MagpiSurvey/MAGPIClassApp_public
+
+And the app is deployed: https://unsw.shinyapps.io/KinematicsClassApp/ 
+
+Classifications followed the scheme employed by SAMI (see Cortese et al. (2016, 
+MNRAS, 463, 170) for morphologies and van de Sande et al. (2021, MNRAS, 505, 3078) 
+for kinematics).
+
+***Data product description:***
+
+The file contains the outcome of the Bayesian modeling of the visual classifications
+provided by MAGPItes. More information on the Bayesian model is available in Foster et al.
+(Submitted in Nov. 2024).
+
+For our purposes, we only included galaxies from the Master catalogue that satisfy 
+the following criteria:
+1- R50_it > 0.75 x fwhm_i (i.e. source is extended according to ProFound)
+2- re > 0.75 x fwhm_r (i.e. source is extended according to GalFit)
+3- mag_it < 26 (source is brighter than ~ the completeness limit in i-band, this 
+weeds out a lot of faint blobs, though not all, sorry...)
+
+The above selection yields 637 galaxies to visually classify (as at February 2023).
+
+Each MAGPIte got their own special randomly ordered list of the galaxies. This 
+ensured that every galaxy was classified by a similar number of MAGPItes.
+
+-------------------
+Column descriptions:
+-------------------
+MAGPIID
+Unique 10-digit MAGPI IDs assigned as a concatenation of the 4 digits FieldID and 
+the 3+3 digits (Xmax,Ymax) position of the brightest pixel in the white-light image. 
+First 2 digits of the FieldID encode the GAMA field number (12=G12, 15=G15, 23=G23), 
+and 3rd and 4th digits encode MAGPI field ID. These IDs may change slightly between 
+releases as the brightest pixel may vary depending on the reduction.
+
+************BAYESIAN POSTERIOR PROBABILITIES************
+
+    "StellOR_cprob1"      
+[11] "StellOR_cprob2"       "StellOR_post_mode"    "StellOR_pmode_prob"   "StellFeat_cprob1"     "StellFeat_cprob2"    
+[16] "StellFeat_post_mode"  "StellFeat_pmode_prob" "GasOR_cprob1"         "GasOR_cprob2"         "GasOR_post_mode"     
+[21] "GasOR_pmode_prob"     "GasFeat_cprob1"       "GasFeat_cprob2"       "GasFeat_post_mode"    "GasFeat_pmode_prob"  
+[26] "EdgeCase_f"           "BarFlag_f"            "VisFeatFlag_f"        "StellKinFlag_f"       "GasKinFlag_f"        
+[31] "NClass"               "comments" 
+
+***Morph related columns***
+Morphology based on synthetic g, r and i image from the MUSE 
+datacube cutout to the ProFound segment for that object. 1Re ellipses from 
+galfit and the FWHM were shown on the image.
+Values were assigned by selecting between
+1- Elliptical (E) = smooth, featureless;
+2- lenticular (S0) = obvious disk, no evidence for spiral arms, substantial bulge;
+3- Early Spiral (eSp) = evidence for spiral arms and a bulge;
+4- Late Spiral (lSp) = prominent spiral arms and minimal/no bulge;
+5- Irregular (Irr) = no distrinct regular shape;
+6- Merger = visual evidence of ongoing merger
+
+Morph_cprob1,2,3,4,5,6 -> Posterior probability of Morph=1,2,3,4,5,6
+Morph_post_mode -> Mode of the posterior Morph distribution
+Morph_pmode_prob -> Posterior probability of the Morph posterior mode
+
+***StellOR related columns***
+Obvious rotation for the stellar kinematics. Value should 
+be between [1,2], with 1 = Obvious rotation, 2 = No obvious rotation.
+Classifiers were asked to consider whether the respective (gas/star kinematic) 
+maps exhibit obvious rotation (OR: clear rotation, possibly accompanied by 
+peaked or flat sigma) or no obvious rotation (NOR).
+
+StellOR_cprob1,2 -> Posterior probability of StellOR =1,2
+StellOR_post_mode -> Mode of the posterior StellOR distribution
+StellOR_pmode_prob -> Posterior probability of the StellOR posterior mode
+
+***StellFeat related columns***    
+Visible stellar kinematic features. Value should be between 
+[1,2], with 1 = Without feature, 2 = With feature(s).
+Classifiers were asked whether or not you can see unusual features in the 
+kinematic maps such as 2 velocity dispersion peaks, changes in the kinematic 
+position angle such as kinematically decouple cores (KDC) or kinematic twists 
+(KT).
+
+StellFeat_cprob1,2 -> Posterior probability of StellFeat =1,2
+StellFeat_post_mode -> Mode of the posterior StellFeat distribution
+StellFeat_pmode_prob -> Posterior probability of the StellFeat posterior mode
+
+***GasOR related columns***
+Obvious rotation for the ionised gas kinematics. Value 
+should be between [1,2], with 1 = Obvious rotation, 2 = No obvious rotation.
+Classifiers were asked to consider whether the respective (gas/star kinematic) 
+maps exhibit obvious rotation (OR: clear rotation, possibly accompanied by peaked 
+or flat sigma) or no obvious rotation (NOR).
+
+GasOR_cprob1,2 -> Posterior probability of GasOR =1,2
+GasOR_post_mode -> Mode of the posterior GasOR distribution
+GasOR_pmode_prob -> Posterior probability of the GasOR posterior mode
+
+***GasFeat related columns***
+Visible ionised gas kinematic features. Value should be between 
+[1,2], with 1 = Without feature, 2 = With feature(s).
+Classifiers were asked whether or not you can see unusual features in the 
+kinematic maps such as 2 velocity dispersion peaks, changes in the kinematic 
+position angle such as kinematically decouple cores (KDC) or kinematic twists 
+(KT).
+
+GasFeat_cprob1,2 -> Posterior probability of GasFeat =1,2
+GasFeat_post_mode -> Mode of the posterior GasFeat distribution
+GasFeat_pmode_prob -> Posterior probability of the GasFeat posterior mode
+
+
+************FLAGS************
+
+EdgeCase_f
+Fraction of classifiers who selected the EdgeCase flag between [0,1] where 
+0|1 represents none of|all classifiers having flagged this target as an edge case. 
+Edge cases are targets that have been cropped due to being located at the edge of 
+the MAGPI field.
+
+BarFlag_f    
+Fraction of classifiers who selected the BarFlag flag between [0,1], where 0|1 represents none of|all 
+classifiers having flagged this target as a barred galaxy.
+
+VisFeatFlag_f
+Fraction of classifiers who selected the the VisFeatFlag. 0 corresponds to no other features visible on 
+the image, while 1 corresponds to "there are other features in the image".
+
+StellKinFlag_f 
+Fraction of classifiers who selected the quality control value flag for the stellar 
+kinematic maps. 
+0= there are no issues with the stellar kinematic maps and 
+1= there are issues with the stellar kinematic maps.
+Classifiers were asked if there are issues with the kinematic data that may 
+limit their usability for science by ticking the appropriate box.
+
+GasKinFlag_f
+Fraction of classifiers who selected the quality control value flag for the ionised 
+gas kinematic maps. 
+0= there are no issues with the ionised gas kinematic maps and 
+1= there are issues with the ionised gas kinematic maps.
+Classifiers were asked if there are issues with the kinematic data that may limit 
+their usability for science by ticking the appropriate box.
+
+************OTHER************
+NClass
+Number of unique/idependent visual classifications performed on this target.
+
+Comments
+Compilation of provided comments separated by '/'.
+
+
+
+***Usage notes:***
+
+Objects with r-band (mag_rt) < 20 mag have the most robust visual classifications. We 
+recommend using pmode_prob values >0.98..
+
+Paper was submitted in November 2024 (likely to be accepted in 2025).
+
+***Location of files:***
+The table is kept on the MAGPI cloud under .../teamdata/MAGPI/VisualClass_v2.2.1
+
+***Relevant formatting information:***
+
+Standard csv file. If you experiecne any issues and would rather a different
+format, please contact Caro F.
+
+
+
+
+

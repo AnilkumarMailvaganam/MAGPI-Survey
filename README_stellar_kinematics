@@ -1,0 +1,170 @@
+*********************************************************************************
+Title: README_stellar_kinematics
+Author: [Francesco D'Eugenio](francesco.deugenio@gmail.com)
+Date of creation: 08/02/2023
+Last modified: 08/02/2023
+Purpose: This file describes basic details of how the stellar kinematics data
+    products were obtained. Please contact the author for additional details or
+    if you notice anything awry.
+Dependencies:
+    [minicubes v2.2.1 (requires login)](https://datacentral.org.au/teamdata/MAGPI/valueadded/analysed_v2.2.1/README_minicubes)
+    [profound catalogues (requires login)](https://datacentral.org.au/teamdata/MAGPI/valueadded/analysed_v2.2.1/README_profoundsegmap)
+    [redshifts v2.2.1 (requires login)](https://datacentral.org.au/teamdata/MAGPI/valueadded/analysed_v2.2.1/README_redshifting)
+Other info:
+*********************************************************************************
+
+
+***Relevant concepts:***
+
+MAGPI Field IDs:
+MAGPI fields have unique 4 digits IDs starting with 12 (GAMA G12), 15 (GAMA G15) or 23 (GAMA G23). In each GAMA field (G12, G15 and G23), MAGPI fields are ordered by declination. The next 2 digits correspond to that declination order.
+
+***Data product description:*** 
+
+The input templates are a reduced version of the IndoUS library [https://noirlab.edu/science/observing-noirlab/observing-kitt-peak/telescope-and-instrument-documentation/cflib] (Valdes et al. 2004).
+The specific commands and batch scripts used to run the software are available on the github page.
+
+All stellar kinematics are obtained with ppxf (Cappellari 2017, 2022), with the gistPipeline v2.1 as
+using as input a reduced version of the IndoUS stellar-template library (we removed all spectra with gaps).
+All stellar kinematics are obtained using additive Legendre polynomials of degree=12. Regions of possible
+nebular emission are masked, together with the spectral region affected by the AO laser, and by the strongest sky lines.
+
+The stellar kinematics are obtained using a custom version of the gistPipeline v2.1
+(Bittner et al. 2019). The heavily modified gistPipeline is available on the [author's github account (requires
+login)](https://github.com/fdeugenio/magpie)
+For each minicube, we first create an aperture centred on the profound centre and with radius equal to one
+profound R50. The resulting spectrum is fit with ppxf, using the redshift from the profound source
+catalogue as initial guess. The resulting, refined redshift is used as initial guess for the ppxf kinematic maps.
+
+The pipeline then proceeds to determine a subset of stellar templates to be used to fit the spectrum of individual
+spaxels. This is done based on annular bins (SAMI method, van de Sande et al. 2017a). Starting from the centre, it
+creates a series of elliptical annulii, using only spaxels with nominal S/N>=3.
+Each annulus is grown in steps of one half a pixel (0.1 arcsec) until either the target S/N=25 is (nominally) reached,
+or until there are no more valid spaxels to merge.
+A minimum of one (elliptical) bin is required to proceed; galaxies with insufficient S/N are immediately failed.
+
+The pipeline then fits all annular bins and stores the non-zero templates in a file.
+
+Subsequently, the pipeline proceeds to fit all spaxels; for each spaxel, it retrieves the annular bin where the spaxel
+belongs (or the annular bins, if the spaxel overlaps more
+than one bin) and two more annular bins (if present): one
+is the innermost adjacent bin, one is the outermost adjacent bin. All stellar templates used to construct the best-fit
+spectrum of these annular bins are considered as input.
+
+The data products consist of:
+
+1. Spaxel-by-spaxel stellar kinematic maps (2-moments velocity distribution).
+2. Spaxel-by-spaxel stellar kinematic maps (4-moments velocity distribution).
+3. Voronoi-binned   stellar kinematic maps (2-moments velocity distribution).
+4. A catalogue of sources referring to data product 1.
+
+***Usage notes:***
+
+2-moment spaxel-by-spaxel maps (data product 1 above) are the default data products
+and received most qc attention. Data products 2 & 3 are provided **as is**, at least
+for the moment.
+
+As an initial quality threshold, use any spaxel where kinematics are valid (invalid values are `nan`) and where the uncertainty on the velocity dispersion u(\sigma) satisfies:
+u(\sigma) <= 25. + 0.1 x \sigma
+
+# For example, in python:
+>> import astropy.io as fits
+>> data = fits.open('1501171118_kinematics_ppxf-maps.fits')
+>> valid = data['ERR_SIGMA'] < 25. + 0.1 * data['SIGMA']
+# To also catch nan's:
+>> not_nan = np.isfinite(data['SIGMA'].data + data['V'].data) # Also catches `inf' entries.
+>> valid = valid & not_nan
+
+Further using the catalogue (data product 4), one can reject MAGPIIDs with QCFLAG=1.
+The QCFLAG=1 rejects very compact sources and sources that lie mostly outside the
+cube observed footprint. Further cuts based on the number and quality of the spaxels
+can be used to improve the quality selection (n_spx_sngt3 and n_spx_sngt10).
+
+***Location of files:*** 
+
+All relevant files (including a copy of this README can be found on the cloud at: 
+https://cloud.datacentral.org.au/cloud/MAGPI/valueadded/StellarKinematics_v2.2.1
+
+***Relevant formatting information:***
+
+***1. 2MOM Spaxel-by-spaxel stellar kinematic maps:***
+Filename: https://cloud.datacentral.org.au/cloud/MAGPI/valueadded/StellarKinematics_v2.2.1/kinematic_maps_spaxels_2MOM_v2.2.1/[MAGPIID]_kinematics_ppxf-maps.fits
+No.    Name      Ver    Type      Units    Cards  Dimensions   Format
+  0  PRIMARY        1 PrimaryHDU  [km/s]     18   ()
+  1  V              1 ImageHDU    [km/s]     21   (84, 82)   float64 # Velocity field. Same size as minicube spatial footprint.
+  2  FORM_ERR_V     1 ImageHDU    [km/s]     21   (84, 82)   float64 # Velocity uncertainties. From ppxf chi2.
+  3  ERR_V          1 ImageHDU    [km/s]     21   (84, 82)   float64 # Velocity uncertainties. From Monte-Carlo run.
+  4  SIGMA          1 ImageHDU    [km/s]     21   (84, 82)   float64 # Velocity dispersion field.
+  5  FORM_ERR_SIGMA 1 ImageHDU    [km/s]     21   (84, 82)   float64 # Velocity dispersion uncertainties. From ppxf chi2.
+  6  ERR_SIGMA      1 ImageHDU    [km/s]     21   (84, 82)   float64 # Velocity dispersion uncertainties. From Monte-Carlo run.
+  7  SNR            1 ImageHDU    [1/pixel]  21   (84, 82)   float64 # Empirical SNR (median S)/robust_rms(residuals).
+  8  NOIRESCF       1 ImageHDU               21   (84, 82)   float64 # Noise rescaling factor to get chi2=1.
+Filename: https://cloud.datacentral.org.au/cloud/MAGPI/valueadded/StellarKinematics_v2.2.1/kinematic_maps_spaxels_2MOM_v2.2.1/[MAGPIID]_maps.png
+An image of the kinematic maps.
+
+***2. 4MOM Spaxel-by-spaxel stellar kinematic maps:***
+Filename: https://cloud.datacentral.org.au/cloud/MAGPI/valueadded/StellarKinematics_v2.2.1/kinematic_maps_spaxels_4MOM_v2.2.1/[MAGPIID]_kinematics_ppxf-maps.fits
+No.    Name      Ver    Type      Units    Cards  Dimensions   Format
+  0  PRIMARY        1 PrimaryHDU  [km/s]     18   ()
+  1  V              1 ImageHDU    [km/s]     21   (84, 82)   float64 # Velocity field. Same size as minicube spatial footprint.
+  2  FORM_ERR_V     1 ImageHDU    [km/s]     21   (84, 82)   float64 # Velocity uncertainties. From ppxf chi2.
+  3  ERR_V          1 ImageHDU    [km/s]     21   (84, 82)   float64 # Velocity uncertainties. From Monte-Carlo run.
+  4  SIGMA          1 ImageHDU    [km/s]     21   (84, 82)   float64 # Velocity dispersion field.
+  5  FORM_ERR_SIGMA 1 ImageHDU    [km/s]     21   (84, 82)   float64 # Velocity dispersion uncertainties. From ppxf chi2.
+  6  ERR_SIGMA      1 ImageHDU    [km/s]     21   (84, 82)   float64 # Velocity dispersion uncertainties. From Monte-Carlo run.
+  7  H3             1 ImageHDU               21   (84, 82)   float64 # Gauss-hermite moment h_3.
+  8  ERR_H3         1 ImageHDU               21   (84, 82)   float64 # Gauss-hermite moment h_3 uncertainties. From ppxf chi2.
+  9  FORM_ERR_H3    1 ImageHDU               21   (84, 82)   float64 # Gauss-hermite moment h_3 uncertainties. From Monte-Carlo run.
+ 10  H4             1 ImageHDU               21   (84, 82)   float64 # Gauss-hermite moment h_4.
+ 11  ERR_H4         1 ImageHDU               21   (84, 82)   float64 # Gauss-hermite moment h_4 uncertainties. From ppxf chi2.
+ 12  FORM_ERR_H4    1 ImageHDU               21   (84, 82)   float64 # Gauss-hermite moment h_4 uncertainties. From Monte-Carlo run.
+ 13  SNR            1 ImageHDU    [1/pixel]  21   (84, 82)   float64 # Empirical SNR (median S)/robust_rms(residuals).
+ 14  NOIRESCF       1 ImageHDU               21   (84, 82)   float64 # Noise rescaling factor to get chi2=1.
+Filename: https://cloud.datacentral.org.au/cloud/MAGPI/valueadded/StellarKinematics_v2.2.1/kinematic_maps_spaxels_4MOM_v2.2.1/[MAGPIID]_maps.png
+An image of the kinematic maps.
+
+***3.a Voronoi-binned stellar kinematic maps:***
+Filename: Filename: https://cloud.datacentral.org.au/cloud/MAGPI/valueadded/StellarKinematics_v2.2.1/kinematic_maps_voronoi_2MOM_v2.2.1/[MAGPIID]_kinematics_ppxf-maps.fits
+
+BIN_ID         : unique ID  of Voronoi bin (only positive BIN_ID are reported)
+XBIN           : coordinate of Voronoi bin [arcsec]
+YBIN           : coordinate of Voronoi bin [arcsec]
+FLUXBIN        : spaxel flux [F_lambda, arbitrary units]
+SNRBIN         : nominal signal-to-noise ratio of the Voronoi bin.
+NSPAX          : number of spaxels that entered the Voronoi bin.
+V              : bin velocity [km/s]
+SIGMA          : bin velocity dispersion [km/s]
+LAMBDA_R       : spaxel contribution towards lambda_r
+ERR_V          : unused
+ERR_SIGMA      : unused
+FORM_ERR_V     : uncertainty on V, from ppxf chi2 [km/s]
+FORM_ERR_SIGMA : uncertainty on SIGMA, from ppxf chi2 [km/s]
+Filename: https://cloud.datacentral.org.au/cloud/MAGPI/valueadded/StellarKinematics_v2.2.1/kinematic_maps_voronoi_2MOM_v2.2.1/[MAGPIID]_ppxf.pdf
+Images are available only for 180 objects at the moment.
+
+***4. Catalogue contents:***
+This catalogue refers only to the 2MOM spaxel-by-spaxel maps (data product 1).
+Filename: https://cloud.datacentral.org.au/cloud/MAGPI/valueadded/StellarKinematics_v2.2.1/kinematic_maps_spaxels_2MOM_v2.2.1_QC.fits
+
+MAGPIID
+  MAGPIID, v2.2.1
+RAcen
+  degree; from profound
+Deccen
+  degree; from profound
+R50
+  arcsec; from profound
+mag_rt
+  AB mag; from profound
+Z
+  initial redshift estimate from source catalogue
+PPXF_REDSHIFT
+  from central aperture. To re-add this redshift to the maps, one can do v += c * ln(1+z)
+n_spx
+  number of spaxels in spaxel-by-spaxel kinematics where the fit was attempted.
+n_spx_sngt3
+  number of spaxels in spaxel-by-spaxel kinematics with empirical SNR>3 (median per spectral pixel).
+n_spx_sngt10
+  number of spaxels in spaxel-by-spaxel kinematics with empirical SNR>10 (median per spectral pixel).
+QCFLAG
+  Quality flag of spaxel-by-spaxel 2MOM maps from visual inspection; 0 = not unusable, 1 = do not use

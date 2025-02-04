@@ -1,0 +1,278 @@
+********************************************************************************
+Title: README_VisClassStats
+Author: Caroline foster (c.foster@unsw.edu.au)
+Date of creation: 18/04/2023
+Last modified: 06/07/2023
+Purpose: This file describes basic details of how the MAGPI_VisClassStats.csv file 
+is created and formatted. Pls contact the author for additional detail or if you 
+notice anything awry.
+Dependencies: Individual classifications collected via the MAGPI classification 
+shiny app deployed
+at https://shiny.datacentral.org.au/magpiclassapp/
+Synthetic images from MPDAF, gas kinematic (MAGPIXXXX_v2.2.1_GIST_Full_Maps.tar.gz) 
+and stellar kinematic (kinematic_maps_spaxels_2MOM_v2.2.1.tar.xz) maps are based 
+on v2.2.1 reduction of the MAGPI MUSE cubes.
+Other info: Contributing MAGPItes to this dataset are Caroline Foster, Alina Boecker, 
+Anshu Gupta, Caro Derkenne, Eda Gjergo, Eric Muller, Anna Ferre-Mateu, Giulia Santucci, 
+Hey-Jin Park, Qianhui Chen, Ryan Bagge, Sabine Bellstedt, Sabine Thater, Sam Vaughan 
+and Stefania Barsanti.
+********************************************************************************
+
+***Relevant concepts:***
+
+The code for the online app that was used to collect the visual classifications 
+can be found on github: https://github.com/MagpiSurvey/MAGPIClassApp
+
+And the app is deployed: https://shiny.datacentral.org.au/magpiclassapp/ 
+
+Classifications followed the scheme employed by SAMI (see Cortese et al. (2016, 
+MNRAS, 463, 170) for morphologies and van de Sande et al. (2021, MNRAS, 505, 3078) 
+for kinematics).
+
+***Data product description:***
+
+The file is a compilation of all classifications provided by MAGPItes.
+
+For our purposes, we only included galaxies from the Master catalogue that satisfy 
+the following criteria:
+1- R50_it > 0.75 x fwhm_i (i.e. source is extended according to ProFound)
+2- re > 0.75 x fwhm_r (i.e. source is extended according to GalFit)
+3- mag_it < 26 (source is brighter than ~ the completeness limit in i-band, this 
+weeds out a lot of faint blobs, though not all, sorry...)
+
+The above selection yields 637 galaxies to visually classify (as at February 2023).
+
+Each MAGPIte got their own special randomly ordered list of the galaxies. This 
+ensured that every galaxy was classified by a similar number of MAGPItes.
+
+-------------------
+Column descriptions:
+-------------------
+MAGPIID
+Unique 10-digit MAGPI IDs assigned as a concatenation of the 4 digits FieldID and 
+the 3+3 digits (Xmax,Ymax) position of the brightest pixel in the white-light image. 
+First 2 digits of the FieldID encode the GAMA field number (12=G12, 15=G15, 23=G23), 
+and 3rd and 4th digits encode MAGPI field ID. These IDs may change slightly between 
+releases as the brightest pixel may vary depending on the reduction.
+
+muEdgeCase
+Mean value of the EdgeCase flag between [0,1] where 0|1 represents none of|all 
+classifiers having flagged this target as an edge case. Edge cases are targets 
+that have been cropped due to being located at the edge of the MAGPI field.
+
+MoEdgeCase    
+Mode value of the EdgeCase flag (see muEdgeCase).
+
+sdEdgeCase     
+Standard deviation of EdgeCase flag (see muEdgeCase).
+
+muMorph
+Mean assigned morphology based on synthetic g, r and i image from the MUSE 
+datacube cutout to the ProFound segment for that object. 1Re ellipses from 
+galfit and the FWHM were shown on the image.
+Values were assigned by selecting between
+1- Elliptical (E) = smooth, featureless;
+2- lenticular (S0) = obvious disk, no evidence for spiral arms, substantial bulge;
+3- Early Spiral (eSp) = evidence for spiral arms and a bulge;
+4- Late Spiral (lSp) = prominent spiral arms and minimal/no bulge;
+5- Irregular (Irr) = no distrinct regular shape;
+6- Merger = visual evidence of ongoing merger
+
+MoMorph 
+Mode assigned morphology (see muMorph). This is the preferred morphology.
+
+sdMorph    
+Standard deviation on the assigned morphology (see muMorph).
+
+fMorph
+The fraction of classifiers that have explicitly selected a specific morphology 
+(i.e. excluding 0s and 7s). We recommend using MoMorph for objects with fMorph>0.4.
+
+fMorphIDK
+The fraction of MAGPItes who answered "I don't know" to the morphology question 
+for a given target.
+
+muBarFlag      
+Mean value of the BarFlag flag between [0,1], where 0|1 represents none of|all 
+classifiers having flagged this target as a barred galaxy.
+
+MoBarFlag      
+Mode value of the BarFlag flag (see muBarFlag).
+
+sdBarFlag      
+Standard Deviation of the BarFlag flag (see muBarFlag).
+
+muVisFeatFlag 
+Mean value of the VisFeatFlag. 0 corresponds to no other features visible on 
+the image, while 1 corresponds to "there are other features in the image".
+
+MoVisFeatFlag
+Mode value for the VisFeatFlag (see muVisFeatFlag).
+
+sdVisFeatFlag  
+Standard Deviation of the VisFeatFlag (see muVisFeatFlag).
+
+muStellOR  
+Mean assigned value of obvious rotation for the stellar kinematics. Value should 
+be between [1,2], with 1 = Obvious rotation, 2 = No obvious rotation.
+Classifiers were asked to consider whether the respective (gas/star kinematic) 
+maps exhibit obvious rotation (OR: clear rotation, possibly accompanied by 
+peaked or flat sigma) or no obvious rotation (NOR).
+
+MoStellOR   
+Mode assigned value of obvious rotation for the stellar kinematics (see muStellOR).
+This is the recommended StellOR.
+
+sdStellOR      
+Standard deviation on the assigned value of obvious rotation for the stellar 
+kinematics (see muStellOR).
+
+fStellOR
+The fraction of classifiers that have explicitly selected a specific stellar 
+rotation (i.e. OR or NOR and excluding 0s and 3s). We recommend using MoStellOR 
+for objects with fStellOR>0.4.
+
+fStellORIDK   
+Fraction of classifiers who said "I don't know" to whether target displays 
+obvious rotation in the stellar kinematic maps or not.
+
+muStellFeat    
+Mean assigned for visible stellar kinematic features. Value should be between 
+[1,2], with 1 = Without feature, 2 = With feature(s).
+Classifiers were asked whether or not you can see unusual features in the 
+kinematic maps such as 2 velocity dispersion peaks, changes in the kinematic 
+position angle such as kinematically decouple cores (KDC) or kinematic twists 
+(KT).
+
+MoStellFeat    
+Mean assigned for visible stellar kinematic features (see muStellFeat). This is the
+recommended StellFeat value.
+
+sdStellFeat    
+Standard Deviation for visible stellar kinematic features (see muStellFeat).
+
+fStellFeat
+The fraction of classifiers that have explicitly selected whether there were or 
+weren't stellar kinematic features (i.e. excluding 0s and 3s). We recommend 
+using MoStellFeat for objects with fStellFeat>0.4.
+
+fStellFeatIDK  
+Fraction of classifiers who said "I don't know" to whether target is has stellar 
+kinematic features or not.
+
+muStellKinFlag 
+Mean quality control value flag for the stellar kinematic maps. 0= there are no 
+issues with the stellar kinematic maps and 1= there are issues with the stellar 
+kinematic maps.
+Classifiers were asked if there are issues with the kinematic data that may 
+limit their usability for science by ticking the appropriate box.
+
+MoStellKinFlag
+Mode quality control value flag for the stellar kinematic maps (see 
+muStellKinFlag).
+
+sdStellKinFlag
+Standard Deviation of quality control value flag for the stellar kinematic maps
+(see muStellKinFlag).
+
+muGasOR
+Mean assigned value of obvious rotation for the ionised gas kinematics. Value 
+should be between [1,2], with 1 = Obvious rotation, 2 = No obvious rotation.
+Classifiers were asked to consider whether the respective (gas/star kinematic) 
+maps exhibit obvious rotation (OR: clear rotation, possibly accompanied by peaked 
+or flat sigma) or no obvious rotation (NOR).
+
+MoGasOR
+Mode assigned value of obvious rotation for the ionised gas kinematics (see 
+muGasOR).NA = no mode / agreement. This is the preferred value for GasOR.
+
+fGasOR
+The fraction of classifiers that have explicitly selected a specific gas rotation 
+(i.e. OR or NOR and excluding 0s and 3s). We recommend using MoGasOR for objects 
+with fMorph>0.4.
+
+sdGasOR
+Standard deviation of the assigned value of obvious rotation for the ionised gas 
+kinematics (see muGasOR).
+
+fGasORIDK
+Fraction of classifiers who said "I don't know" to whether the target displays 
+obvious rotation in the ionised gas kinematic maps or not.
+
+muGasFeat
+Mean assigned for visible ionised gas kinematic features. Value should be between 
+[1,2], with 1 = Without feature, 2 = With feature(s).
+Classifiers were asked whether or not you can see unusual features in the 
+kinematic maps such as 2 velocity dispersion peaks, changes in the kinematic 
+position angle such as kinematically decouple cores (KDC) or kinematic twists 
+(KT).
+
+MoGasFeat
+Mode assigned for visible stellar kinematic features (see muGasFeat). This is the 
+recommended GasFeat value.
+
+sdGasFeat
+Standard deviation of assigned for visible stellar kinematic features (see 
+muGasFeat).
+
+fGasFeat
+The fraction of classifiers that have explicitly selected whether there were or 
+weren't gas kinematic features. We recommend using MoGasFeat for objects with 
+fGasFeat>0.4.
+
+fGasFeatIDK
+Fraction of classifiers who said "I don't know" to whether target is has ionised 
+gas kinematic features or not.
+
+muGasKinFlag
+Mean quality control value flag for the ionised gas kinematic maps. 0= there are 
+no issues with the ionised gas kinematic maps and 1= there are issues with the 
+ionised gas kinematic maps.
+Classifiers were asked if there are issues with the kinematic data that may limit 
+their usability for science by ticking the appropriate box.
+
+MoGasKinFlag
+Mode of quality control value flag for the ionised gas kinematic maps (see 
+muGasKinFlag).
+
+sdGasKinFlag
+Standard Deviation of quality control value flag for the ionised gas kinematic 
+maps (see muGasKinFlag).
+
+NClass
+Number of unique/idependent visual classifications performed on this target.
+
+Comments
+Compilation of provided comments separated by '/'.
+
+StellHwC
+Caro Foster's subjective and individual opinion of whether the stellar kinematic 
+maps should be "handled with care". Either there are large gaps in the map, too 
+few spaxels, something weird, cropped map due to being at the edge of the field 
+of view, etc. This is subjective and obviously will depend on the science case, 
+so please handle using those kinematic maps "with care". If you spot other maps 
+that you feel should be handled with care that are not listed, please contact 
+Caro F.
+
+GasHwC
+Same as StellHwC, but for ionised gas kinematic maps.
+
+mag_rt
+ProFound r-band magnitude copied from the master catalogue.
+
+***Usage notes:***
+
+Objects with r-band (mag_rt) < 20 mag have the most robust visual classifications. We 
+recommend a minumum of 0.4 in fMorph, fStellOR, fStellFeat, fGasOR and 
+fGasFeat as a threshold for meaningful morphology and dynamical classifications.
+We further recommend that the Mode (Mo) be used over the mean (mu). Paper is
+currently in prep and more detail can be found in the draft at:
+https://www.overleaf.com/read/mpvxtybqqcys 
+
+***Location of files:***
+The table is kept on the MAGPI cloud under .../teamdata/MAGPI/VisualClass_v2.2.1
+
+***Relevant formatting information:***
+
+Standard csv file. If you experiecne any issues and would rather a different
+format, please contact Caro F.

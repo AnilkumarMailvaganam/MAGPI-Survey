@@ -1,0 +1,152 @@
+********************************************************************************
+Title: README_MultiwavelengthPhotometry
+Author: Sabine Bellstedt (sabine.bellstedt@uwa.edu.au)
+Date of creation: 26/10/2022
+Last modified: 26/10/2022
+Purpose: This file describes the creation of the broadband photometry catalogue MAGPI_Photometry_v2.2.0.csv
+Dependencies: This product is based on the v2.2.0 (...cloud.../MAGPI/reducedcubes/MAGPI_v2.2/MAGPIXXXX.fits) of the reduced cubes and associated manually edited dilated and undilated segmentation maps (...cloud.../MAGPI/valueadded/analysed_v2.2.0/MAGPIXXXX/segmap/MAGPI1201_manual_segmap.fits 
+Other info:
+This is based on imaging collated for GAMA DR4
+********************************************************************************
+
+Relevant concepts:
+-----------------
+This derivation of global photometry for MAGPI is based on the GAMA multi-wavelength images that have been pixel-matched to MAGPI, using the MAGPI-computed ProFound segmentation maps. 
+
+Data product description:
+-------------------------
+proFoundMultiband is used to compute the global photometry using the following command:
+multibandOutput=profoundMultiBand(
+		segim = magpi_segmap$imDat,
+		inputlist=images,
+		itersdet = 0,
+		iterstot = 2,
+		totappend = 't',
+		sizestot = 5,
+		colappend = 'c',
+		detectbands = c('r', 'Z'),
+		multibands = bands_total,
+		keepsegims = TRUE,
+		magzero = c(0,0,0,0,30,30,30,30,30),
+		dotot = TRUE,
+		docol = TRUE,
+		dogrp = TRUE,
+		verbose = TRUE,
+		box = c(100,100,100,100,100,100,100,100,100),
+		boxiters = 4,
+		boxadd = c(50,50,50,50,50,50,50,50,50),
+		grid = c(50,50,50,50,50,50,50,50,50),
+		roughpedestal = TRUE,
+		redosegim = FALSE,
+		deblend = FALSE,
+		groupstats = TRUE,
+		mask = 0,
+		SBdilate = 1.0,
+		SBN100 = 100,
+		appdiam = 1.4,
+		fluxtype = 'Jansky'
+	)
+
+The Planck foreground dust maps have been used to compute the attenuation for each source, and both dust corrected and uncorrected values are provided in the catalogue. 
+
+
+Usage notes:
+-----------
+Dust-corrected values should almost always be used as the default photometry per source. 
+
+Location of files:
+------------------
+The photometry catalogue is located at MAGPI/valueadded/ProFound_MultiwavelengthPhotom_v2.2.0/MAGPI_Photometry_v2.2.0.csv
+Pixel-matched images for KiDS are located at MAGPI/Imaging/v2.0/KiDS/ 
+Pixel-matched images for Viking are located at MAGPI/Imaging/v2.0/VIKING/
+
+Relevant formatting information:
+-------------------------------
+Columns for the photometry cat:
+MAGPIID								ID of source
+segID								ProFound-defined segment ID
+xmax								x position of brightest pixel (from MAGPI)
+ymax								y position of brightest pixel (from MAGPI)
+RAmax								RA position of brightest pixel (from MAGPI)
+Decmax								Dec position of brightest pixel (from MAGPI)
+z									redshift (from MAGPI)
+QOP									redshift quality flag (from MAGPI)
+mag_it								total i-band mag (from MAGPI)
+mag_rt								total r-band mag (from MAGPI)
+R50_it								half-light radius (from MAGPI)
+R90_it								Radius including 90% of flux (from MAGPI)
+axrat_it							segment axial ratio (from MAGPI)
+ang_it								segment principal angle (from MAGPI)
+EBV									Foreground attenuation (from Planck)
+kids_flux_ut						Total u-band flux, dust-corrected (from pixel-matched KiDS images)
+kids_flux_ut_uncorrected			Total u-band flux, not dust-corrected (from pixel-matched KiDS images)
+kids_flux_gt						Total g-band flux, dust-corrected (from pixel-matched KiDS images)
+kids_flux_gt_uncorrected			Total g-band flux, not dust-corrected (from pixel-matched KiDS images)
+kids_flux_rt						Total r-band flux, dust-corrected (from pixel-matched KiDS images)
+kids_flux_rt_uncorrected			Total r-band flux, not dust-corrected (from pixel-matched KiDS images)
+kids_flux_it						Total i-band flux, dust-corrected (from pixel-matched KiDS images)
+kids_flux_it_uncorrected			Total i-band flux, not dust-corrected (from pixel-matched KiDS images)
+viking_flux_Zt						Total Z-band flux, dust-corrected (from pixel-matched Viking images)
+viking_flux_Zt_uncorrected			Total Z-band flux, not dust-corrected (from pixel-matched Viking images)
+viking_flux_Yt						Total Y-band flux, dust-corrected (from pixel-matched Viking images)
+viking_flux_Yt_uncorrected			Total Y-band flux, not dust-corrected (from pixel-matched Viking images)
+viking_flux_Jt						Total J-band flux, dust-corrected (from pixel-matched Viking images)
+viking_flux_Jt_uncorrected			Total J-band flux, not dust-corrected (from pixel-matched Viking images)
+viking_flux_Ht						Total H-band flux, dust-corrected (from pixel-matched Viking images)
+viking_flux_Ht_uncorrected			Total H-band flux, not dust-corrected (from pixel-matched Viking images)
+viking_flux_Kst						Total Ks-band flux, dust-corrected (from pixel-matched Viking images)
+viking_flux_Kst_uncorrected			Total Ks-band flux, not dust-corrected (from pixel-matched Viking images)
+kids_mag_ut							Total u-band AB magnitude, dust-corrected (from pixel-matched KiDS images)
+kids_mag_ut_uncorrected				Total u-band AB magnitude, not dust-corrected (from pixel-matched KiDS images)
+kids_mag_gt							Total g-band AB magnitude, dust-corrected (from pixel-matched KiDS images)
+kids_mag_gt_uncorrected				Total g-band AB magnitude, not dust-corrected (from pixel-matched KiDS images)
+kids_mag_rt							Total r-band AB magnitude, dust-corrected (from pixel-matched KiDS images)
+kids_mag_rt_uncorrected				Total r-band AB magnitude, not dust-corrected (from pixel-matched KiDS images)
+kids_mag_it							Total i-band AB magnitude, dust-corrected (from pixel-matched KiDS images)
+kids_mag_it_uncorrected				Total i-band AB magnitude, not dust-corrected (from pixel-matched KiDS images)
+viking_mag_Zt						Total Z-band AB magnitude, dust-corrected (from pixel-matched Viking images)
+viking_mag_Zt_uncorrected			Total Z-band AB magnitude, not dust-corrected (from pixel-matched Viking images)
+viking_mag_Yt						Total Y-band AB magnitude, dust-corrected (from pixel-matched Viking images)
+viking_mag_Yt_uncorrected			Total Y-band AB magnitude, not dust-corrected (from pixel-matched Viking images)
+viking_mag_Jt						Total J-band AB magnitude, dust-corrected (from pixel-matched Viking images)
+viking_mag_Jt_uncorrected			Total J-band AB magnitude, not dust-corrected (from pixel-matched Viking images)
+viking_mag_Ht						Total H-band AB magnitude, dust-corrected (from pixel-matched Viking images)
+viking_mag_Ht_uncorrected			Total H-band AB magnitude, not dust-corrected (from pixel-matched Viking images)
+viking_mag_Kst						Total Ks-band AB magnitude, dust-corrected (from pixel-matched Viking images)
+viking_mag_Kst_uncorrected			Total Ks-band AB magnitude, not dust-corrected (from pixel-matched Viking images)
+kids_flux_err_ut					Total u-band flux error, dust-corrected (from pixel-matched KiDS images)
+kids_flux_err_ut_uncorrected		Total u-band flux error, not dust-corrected (from pixel-matched KiDS images)
+kids_flux_err_gt					Total g-band flux error, dust-corrected (from pixel-matched KiDS images)
+kids_flux_err_gt_uncorrected		Total g-band flux error, not dust-corrected (from pixel-matched KiDS images)
+kids_flux_err_rt					Total r-band flux error, dust-corrected (from pixel-matched KiDS images)
+kids_flux_err_rt_uncorrected		Total r-band flux error, not dust-corrected (from pixel-matched KiDS images)
+kids_flux_err_it					Total i-band flux error, dust-corrected (from pixel-matched KiDS images)
+kids_flux_err_it_uncorrected		Total i-band flux error, not dust-corrected (from pixel-matched KiDS images)
+viking_flux_err_Zt					Total Z-band flux error, dust-corrected (from pixel-matched Viking images)
+viking_flux_err_Zt_uncorrected		Total Z-band flux error, not dust-corrected (from pixel-matched Viking images)
+viking_flux_err_Yt					Total Y-band flux error, dust-corrected (from pixel-matched Viking images)
+viking_flux_err_Yt_uncorrected		Total Y-band flux error, not dust-corrected (from pixel-matched Viking images)
+viking_flux_err_Jt					Total J-band flux error, dust-corrected (from pixel-matched Viking images)
+viking_flux_err_Jt_uncorrected		Total J-band flux error, not dust-corrected (from pixel-matched Viking images)
+viking_flux_err_Ht					Total H-band flux error, dust-corrected (from pixel-matched Viking images)
+viking_flux_err_Ht_uncorrected		Total H-band flux error, not dust-corrected (from pixel-matched Viking images)
+viking_flux_err_Kst					Total Ks-band flux error, dust-corrected (from pixel-matched Viking images)
+viking_flux_err_Kst_uncorrected		Total Ks-band flux error, not dust-corrected (from pixel-matched Viking images)
+kids_mag_err_ut						Total u-band AB magnitude error, dust-corrected (from pixel-matched KiDS images)
+kids_mag_err_ut_uncorrected			Total u-band AB magnitude error, not dust-corrected (from pixel-matched KiDS images)
+kids_mag_err_gt						Total g-band AB magnitude error, dust-corrected (from pixel-matched KiDS images)
+kids_mag_err_gt_uncorrected			Total g-band AB magnitude error, not dust-corrected (from pixel-matched KiDS images)
+kids_mag_err_rt						Total r-band AB magnitude error, dust-corrected (from pixel-matched KiDS images)
+kids_mag_err_rt_uncorrected			Total r-band AB magnitude error, not dust-corrected (from pixel-matched KiDS images)
+kids_mag_err_it						Total i-band AB magnitude error, dust-corrected (from pixel-matched KiDS images)
+kids_mag_err_it_uncorrected			Total i-band AB magnitude error, not dust-corrected (from pixel-matched KiDS images)
+viking_mag_err_Zt					Total Z-band AB magnitude error, dust-corrected (from pixel-matched Viking images)
+viking_mag_err_Zt_uncorrected		Total Z-band AB magnitude error, not dust-corrected (from pixel-matched Viking images)
+viking_mag_err_Yt					Total Y-band AB magnitude error, dust-corrected (from pixel-matched Viking images)
+viking_mag_err_Yt_uncorrected		Total Y-band AB magnitude error, not dust-corrected (from pixel-matched Viking images)
+viking_mag_err_Jt					Total J-band AB magnitude error, dust-corrected (from pixel-matched Viking images)
+viking_mag_err_Jt_uncorrected		Total J-band AB magnitude error, not dust-corrected (from pixel-matched Viking images)
+viking_mag_err_Ht					Total H-band AB magnitude error, dust-corrected (from pixel-matched Viking images)
+viking_mag_err_Ht_uncorrected		Total H-band AB magnitude error, not dust-corrected (from pixel-matched Viking images)
+viking_mag_err_Kst					Total Ks-band AB magnitude error, dust-corrected (from pixel-matched Viking images)
+viking_mag_err_Kst_uncorrected		Total Ks-band AB magnitude error, not dust-corrected (from pixel-matched Viking images)

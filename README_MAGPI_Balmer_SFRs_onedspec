@@ -1,0 +1,52 @@
+********************************************************************************
+Title: README_MAGPI_Balmer_SFRs_undilated_onedspec
+Author: Andrew Battisti (andrew.battisti@anu.edu.au)
+Date of creation: 24/03/2023
+Last modified: 24/03/2023
+Purpose: This file provides integrated SFRs for MAGPI galaxies based on the 1D Balmer line measurements within the *undilated* masks.
+Dependencies: This product is based on the v2.2.1 reduced cubes and associated manually edited undilated segmentation maps.
+Other info: These emission line outputs come from GIST v3.0 (Bittner et al. 2019, A&A 628, A117), which is a wrapper for pPXF (Cappellari & Emsellem 2004; Cappellari 2017) and GandALF (Sarzi et al. 2006; Falcón-Barroso et al. 2006). However, there are several UNIQUE customisations made for its use with MAGPI data (see GIST product READMEs for details). If you are interested in SFRs for other apertures, please contact me.
+********************************************************************************
+
+Relevant concepts:
+The ratio of Balmer emission lines can be used to estimate the amount of dust extinction experienced by the emission lines. For unreddedened emission from typical HII regions (Te~10^4K and ne=100cm^(−3)), you expect the following intrinsic ratios for the Hydrogen Balmer series (Osterbrock & Ferland 2006, see Table 4.4):
+-Halpha/Hbeta = 2.863
+-Hgamma/Hbeta = 0.468
+-Hdelta/Hbeta = 0.258
+where Halpha, Hbeta, Hgamma, and Hdelta are at 6562.8A, 4861.3A, 4340.5A, and 4104.7A, respectivey (air wavelengths).
+
+Observed deviations from these intrinsic line ratios can be attributed to dust reddening, with shorter wavelengths being more absorbed than longer wavelengths (e.g., Hbeta appears fainter relative to Halpha than the expected ratio). I assume the Milky Way extinction curve from Fitzpatrick et al. (2019) for the dust corrections. Because the effect of dust is stronger for lines that are more spearated in wavelength, the uncertainties on dust corrections are larger when using line ratios that are closer in wavelength. This is factored into the SFR uncertainties in this catalog (i.e., SFRs based on Hbeta/Hgamma typically have larger uncertainties than those based on Halpha/Hbeta, even when the S/N for the lines are the same). The line pairs being used to estimate SFRs are below and dependent on the galaxy redshift (i.e., lines in the MUSE spectrum, noting there is also a laser gap):
+-Halpha/Hbeta  (SFR_flag=0)
+-Halpha/Hgamma (SFR_flag=1)
+-Hbeta/Hgamma  (SFR_flag=2)
+-Hbeta/Hdelta  (SFR_flag=3)
+
+To convert to SFRs, I assume the following conversion from Calzetti (2013):
+SFR=5.5e-42*L(Halpha_corr)  [L is in erg/s]
+which assumes a Kroupa IMF. The intrinsic line ratios are used to determine the conversion from other Balmer lines.
+
+IMPORTANT NOTES:
+-I am not attempting to flag galaxies with AGN. SFRs for galaxies with AGN should *NOT* be trusted because AGN have different intrinsic Balmer line ratios!  
+-I require S/N>=3 on both lines being used, therefore there are a lot of MAGPI galaxies without SFRs based on Balmer lines. You may consider using the SED-derived SFRs from ProSpect for those cases.
+-I am currently not using higher order Balmer lines because the uncertainties on extinction corrections become very large. The line ratios abive change by ~5-10% over the range of physical conditions for typical HII regions. This variation is NOT factored into the SFR uncertainties.
+-There can be large differences between dust reddening between emission lines and stellar continuum and dust corrections from one should not be used to infer dust corrections on the other (dust attenuation curves should be used for continuum)!
+
+Data product description:
+===UNITS===
+-SFR and SFR_err units are [Msun/yr] (i.e., linear-scale)
+
+Usage notes:
+The SFRs from this catalog should be reliable for 'non-active' galaxies (both passive and star-forming). 'Active' galxies refers to cases where you can get ionisation from non-stellar sources (e.g., AGN, shocks), which is commonly determined using emission line diagnostics such as the BPT diagrams.
+
+Location of files:
+An ascii table of the ondespec SFRs containing all MAGPI sources (with QOP 3 or 4) can be found in:
+...cloud.../MAGPI/valueadded/analysed_v2.2.1/MAGPI_Balmer_SFRs_undilated_onedspec.tbl
+
+Relevant formatting information:
+ascii table, first 5 lines shown below
+# MAGPI_ID      z_spec        SFR        SFR_err  SFR_flag
+#==Notes: SFR_flag=0 use Ha/Hb for correction, 1 use Ha/Hg, 2 use Hb/Hg, 3 use Hb/Hd==
+#==Require S/N>=3 on both lines; Corrections assume Milky Way extinction curve==
+1201057188     0.879600     0.541487     0.213924       2
+1201061256     0.402700    0.0137670   0.00172550       0
+...
